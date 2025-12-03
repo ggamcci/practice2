@@ -14,10 +14,13 @@ datasource db {
 //  Users Table
 // ===============================
 model User {
-  id        Int       @id @default(autoincrement())
-  username  String
-  userRole  String     @map("user_role")
-  createdAt DateTime   @default(now()) @map("created_at")
+  id           Int       @id @default(autoincrement())
+  username     String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  userRole     String    @map("user_role")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   // Relations
   reviews   Review[]
@@ -25,6 +28,7 @@ model User {
   wishlist  Wishlist[]
   cartItems CartItem[]
 }
+
 
 // ===============================
 //  Books Table
