@@ -1,0 +1,118 @@
+// ===============================
+//  Datasource & Generator
+// ===============================
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ===============================
+//  Users Table
+// ===============================
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String
+  userRole  String     @map("user_role")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  reviews   Review[]
+  orders    Order[]
+  wishlist  Wishlist[]
+  cartItems CartItem[]
+}
+
+// ===============================
+//  Books Table
+// ===============================
+model Book {
+  id        Int       @id @default(autoincrement())
+  title     String
+  author    String
+  price     Decimal
+  stock     Int       @default(0)
+  category  String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+
+  // Relations
+  reviews   Review[]
+  wishlist  Wishlist[]
+  cartItems CartItem[]
+  orders    Order[]
+}
+
+// ===============================
+//  Orders Table
+// (order items 구조가 따로 없어서 user_id, book_id 1:1로 처리)
+// ===============================
+model Order {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @map("user_id")
+  bookId        Int       @map("book_id")
+  totalPrice    Decimal   @map("total_price")
+  status        String
+  paymentMethod String?   @map("payment_method")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+}
+
+// ===============================
+//  Reviews Table
+// ===============================
+model Review {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  bookId    Int       @map("book_id")
+  rating    Int
+  content   String
+  likeCount Int       @default(0) @map("like_count")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+}
+
+// ===============================
+//  Wishlist Table (Favorite)
+//  (user_id, book_id) UNIQUE
+// ===============================
+model Wishlist {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  bookId    Int       @map("book_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+}
+
+// ===============================
+//  CartItems Table
+// (user_id, book_id) UNIQUE
+// ===============================
+model CartItem {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  bookId    Int       @map("book_id")
+  quantity  Int       @default(1)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+}
